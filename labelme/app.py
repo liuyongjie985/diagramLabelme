@@ -35,6 +35,7 @@ import json
 import numpy as np
 import cv2
 from PIL import Image
+from shapely.geometry import Point, Polygon
 
 # FIXME
 # - [medium] Set max zoom value to something big enough for FitWidth/Window
@@ -1414,17 +1415,35 @@ class MainWindow(QtWidgets.QMainWindow):
         for item in self.labelList:
             item.setCheckState(Qt.Checked if value else Qt.Unchecked)
 
+    # =========================================origin algorithm=====================================
+    # def isStrokeInGroup(self, s, gxs, gys):
+    #     x_min = min(gxs)
+    #     x_max = max(gxs)
+    #     y_min = min(gys)
+    #     y_max = max(gys)
+    #     in_num = 0
+    #     total_num = 0
+    #
+    #     for points in s:
+    #         if points["x"] >= x_min and points["x"] <= x_max and points[
+    #             "y"] >= y_min and points["y"] <= y_max:
+    #             in_num += 1
+    #         total_num += 1
+    #     if total_num != 0 and in_num / total_num > 0.8:
+    #         return True
+    #     else:
+    #         return False
+
+    # ==========================================================
     def isStrokeInGroup(self, s, gxs, gys):
-        x_min = min(gxs)
-        x_max = max(gxs)
-        y_min = min(gys)
-        y_max = max(gys)
+        coords = [(gxs[i], gys[i]) for i in range(len(gxs))]
+        poly = Polygon(coords)
         in_num = 0
         total_num = 0
 
         for points in s:
-            if points["x"] >= x_min and points["x"] <= x_max and points[
-                "y"] >= y_min and points["y"] <= y_max:
+            p = Point(points["x"], points["y"])
+            if p.within(poly):
                 in_num += 1
             total_num += 1
         if total_num != 0 and in_num / total_num > 0.8:
